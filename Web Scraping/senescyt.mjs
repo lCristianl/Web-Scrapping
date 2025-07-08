@@ -3,16 +3,15 @@ import { chromium } from "playwright"
 const browser = await chromium.launch({ headless: false })
 const page = await browser.newPage()
 
-console.log("Abriendo página de SENESCYT...")
 await page.goto("https://www.senescyt.gob.ec/consulta-titulos-web/faces/vista/consulta/consulta.xhtml", {
   waitUntil: "domcontentloaded"
 })
 
-console.log("Por favor, llena el formulario manualmente (cédula y captcha) y haz clic en Buscar.")
-
 try {
+  //Espera hasta que aparezca la tabla en la pagina (Cuando ya se muestra la tabla se cierra la ventana)
   await page.waitForSelector("tbody[id$='tablaAplicaciones_data']", { timeout: 60000 })
 
+  //Recorro las filas de la tabla y obtengo los datos
   const resultados = await page.$$eval("tbody[id$='tablaAplicaciones_data'] tr", (filas) => {
     return filas.map((fila) => {
       const columnas = fila.querySelectorAll("td")
