@@ -9,7 +9,15 @@ await page.goto("https://www.funcionjudicial.gob.ec/autoridades/", {
 
 try {
 
-    //FALTA AREGLAR LA EXTRACCION DE DATOS
+    /*
+=============================================================================    
+    
+
+    FALTA AREGLAR LA EXTRACCION DE DATOS
+    
+
+=============================================================================
+    */
     const resultados = await page.$$eval(".elementor-widget-container", (element) => {
         return element.map((el) => {
             return {

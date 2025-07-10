@@ -11,7 +11,7 @@ try {
   //Espera hasta que aparaezca la etiqueta que tiene la clase row
   await page.waitForSelector("sri-mostrar-contribuyente", { timeout: 60000 })
   await page.click(".ui-button.cyan-btn.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only")
-    await page.waitForSelector("sri-listar-establecimientos", { timeout: 60000 })
+  await page.waitForSelector("sri-listar-establecimientos", { timeout: 60000 })
 
   //
   const estado = await page.$$eval("sri-mostrar-contribuyente", (elementos) => {
