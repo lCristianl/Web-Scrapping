@@ -7,21 +7,17 @@ await page.goto("https://consultaweb.ant.gob.ec/PortalWEB/paginas/clientes/clp_c
     waitUntil: "domcontentloaded"
 })
 
-/*
-============================================================================
-
-                            FALTA PROBAR
-
-                            (PAGINA CAIDA)
-
-============================================================================
-*/ 
-
 try {
+    //Espera hasta que se ingresen la cedula y le de clik, ahí aparece el div con el id div_estado_cuenta
+    await page.waitForSelector("#div_estado_cuenta", { timeout: 60000 })
 
-    //Recorro las filas de la tabla de citaciones pendientes y obtengo los datos
-    const citacionesPendientes = await page.$$eval("table#list10 tbody tr", (filas) => {
-        return filas.slice(1, -2).map((fila) => {
+    //Espera 1 segundo para que se cargue la tabla de citaciones pendientes
+    await page.waitForTimeout(1000)
+
+    //Recorro las filas de la tabla de citaciones pendientes y obtengo los datos   
+    const citacionesPendientes = await page.$$eval("#list10 tbody", (tabla) => {
+        const filas = Array.from(tabla[0].querySelectorAll("tr"))
+        return filas.slice(1).map((fila) => {
         const columnas = fila.querySelectorAll("td")
             return {
                 id: columnas[0]?.innerText.trim(),
@@ -40,6 +36,7 @@ try {
             }
         })
     })
+        
 
     //Le doy click al botón de "Pagadas" para cambiar la tabla
     await page.evaluate(() => {
@@ -57,9 +54,13 @@ try {
         }
     })
 
+    //Espera 1 segundo para que se cargue la tabla de citaciones pagadas
+    await page.waitForTimeout(1000)
+
     //Recorro las filas de la tabla de citaciones pagadas y obtengo los datos
-    const citacionesPagadas = await page.$$eval("table#list10 tbody tr", (filas) => {
-        return filas.slice(1, -2).map((fila) => {
+    const citacionesPagadas = await page.$$eval("#list10 tbody", (tabla) => {
+        const filas = Array.from(tabla[0].querySelectorAll("tr"))
+        return filas.slice(1).map((fila) => {
             const columnas = fila.querySelectorAll("td")
             return {
                 id: columnas[0]?.innerText.trim(),
@@ -79,15 +80,13 @@ try {
         })
     })
 
-    await page.waitForSelector("table", { timeout: 60000 })
-
     console.log("Citaciones Pendientes:")
     console.log(citacionesPendientes)
     console.log("\nCitaciones Pagadas:")
     console.log(citacionesPagadas)
 
 } catch (error) {
-    console.error("\n❌ No se encontraron resultados.")
+    console.error("\n❌ No se encontraron resultados.", error.message)
 }
 
 await browser.close()
