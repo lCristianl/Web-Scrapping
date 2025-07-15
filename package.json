@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/lCristianl/Web-Scrapping#readme",
   "dependencies": {
+    "mongodb": "^6.17.0",
     "playwright": "^1.53.2"
   }
 }

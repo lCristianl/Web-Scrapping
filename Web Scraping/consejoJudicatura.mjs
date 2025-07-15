@@ -13,6 +13,7 @@ try {
 =============================================================================    
     
 
+    FALTA PREGUNTAR QUE DATOS SE QUIEREN EXTRAER 
     FALTA AREGLAR LA EXTRACCION DE DATOS
     
 

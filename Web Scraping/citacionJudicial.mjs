@@ -1,13 +1,21 @@
 import { chromium } from "playwright"
 
-const browser = await chromium.launch({ headless: false })
-const page = await browser.newPage()
+const cedula = "1102961867"
 
-await page.goto("https://consultas.funcionjudicial.gob.ec/informacionjudicial/public/informacionCitaciones.jsf", {
-  waitUntil: "domcontentloaded"
-})
+export const obtenerCitacionesJudiciales = async (cedula) => {
+  const browser = await chromium.launch({ headless: false })
+  const page = await browser.newPage()
 
-try {
+  await page.goto("https://consultas.funcionjudicial.gob.ec/informacionjudicial/public/informacionCitaciones.jsf", {
+    waitUntil: "domcontentloaded"
+  })
+
+  try {
+    // Rellenamos el campo de cedula
+    await page.type("#form1\\:txtDemandadoCedula", cedula)
+    // Se le da click al botón de buscar
+    await page.click("#form1\\:butBuscarJuicios")
+
     //Espera hasta que la etiqueta td tenga contenido (Si tiene contenido se cierra la ventana)
     await page.waitForFunction(() => {
         const celda = document.querySelector("#form1\\:dataTableJuicios2_data td")
@@ -38,11 +46,14 @@ try {
         })
     })
 
-  console.log("\nDatos Citacion:")
-  console.log(resultados)
+    console.log("\nDatos Citacion:")
+    console.log(resultados)
 
-} catch (error) {
-  console.error("\n❌ No se encontraron resultados. Verifica que los datos ingresados fueron correctos.")
+  } catch (error) {
+    console.error("\n❌ No se encontraron resultados. Verifica que los datos ingresados fueron correctos.")
+  }
+
+  await browser.close()
 }
 
-await browser.close()
+obtenerCitacionesJudiciales(cedula)
