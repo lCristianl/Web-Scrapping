@@ -17,29 +17,39 @@ export const obtenerDatos = async (cedula) => {
     waitUntil: "domcontentloaded"
   })
 
+  let resultados = []
   try {
-
+    // Rellenamos el campo de cédula
     await page.type("#formPrincipal\\:identificacion", cedula) 
+    
+    // Espera hasta que aparezca la primera etiqueta que tiene la clase cuerpo o la que tiene la clase mat-mdc-simple-snack-bar
+      const estado = await Promise.race([
+        page.waitForSelector('.msg-rojo', { timeout: 60000 }).then(() => 'no_resultados'),
+        page.waitForSelector("tbody[id$='tablaAplicaciones_data']", { timeout: 60000 }).then(() => 'ok'),
+      ])
 
-    //Espera hasta que aparezca la tabla en la pagina (Cuando ya se muestra la tabla se cierra la ventana)
-    await page.waitForSelector("tbody[id$='tablaAplicaciones_data']", { timeout: 60000 })
+      //Si se ecnontró la etiqueta que tiene la clase mat-mdc-simple-snack-bar PRIMERO (No se encontraron resultados)
+      if (estado === 'no_resultados') {
+        console.log(`ℹ️ No hay titulos registrados para la cédula ${cedula}`)
+      } else {
+        //Recorro las filas de la tabla y obtengo los datos
+        resultados = await page.$$eval("tbody[id$='tablaAplicaciones_data'] tr", (filas) => {
+          return filas.map((fila) => {
+            const columnas = fila.querySelectorAll("td")
+            return {
+              titulo: columnas[0]?.innerText.trim(),
+              institucion: columnas[1]?.innerText.trim(),
+              tipo: columnas[2]?.innerText.trim(),
+              fechaRegistro: columnas[5]?.innerText.trim(),
+              area: columnas[6]?.innerText.trim(),
+            }
+          })
+        })
 
-    //Recorro las filas de la tabla y obtengo los datos
-    const resultados = await page.$$eval("tbody[id$='tablaAplicaciones_data'] tr", (filas) => {
-      return filas.map((fila) => {
-        const columnas = fila.querySelectorAll("td")
-        return {
-          titulo: columnas[0]?.innerText.trim(),
-          institucion: columnas[1]?.innerText.trim(),
-          tipo: columnas[2]?.innerText.trim(),
-          fechaRegistro: columnas[5]?.innerText.trim(),
-          area: columnas[6]?.innerText.trim(),
-        }
-      })
-    })
+        console.log("\nTítulos encontrados:")
+        console.log(resultados)
+      }
 
-    console.log("\nTítulos encontrados:")
-    console.log(resultados)
 
     if (resultados.length !== 0) {
       // Conectar con MongoDB
@@ -84,15 +94,12 @@ export const obtenerDatos = async (cedula) => {
       }
 
       await client.close()
-    } else {
-      console.log("❌ No se encontraron resultados.")
     }
     
   } catch (error) {
     console.error("\n❌ No se encontraron resultados. Verifica que los datos ingresados fueron correctos.")
   } finally {
     await browser.close()
-    process.exit(0) 
   }
 }
 
