@@ -1,5 +1,12 @@
 import { chromium } from "playwright"
+import { MongoClient } from "mongodb"
 
+// Parámetros de conexión
+const uri = "mongodb://localhost:27017"
+const dbName = "webScraping"
+const collectionName = "datosSRI"
+
+// Datos simulados
 const ruc = "1713449831001" 
 
 export const obtenerDatosRuc = async (ruc) => {
@@ -48,17 +55,100 @@ export const obtenerDatosRuc = async (ruc) => {
           })
       })
 
-
     console.log("\nRegistros encontrados:")
     console.log(estado)
-      console.log("\nEstablecimientos encontrados:")
+    console.log("\nEstablecimientos encontrados:")
     console.log(establecimientos)
 
-  } catch (error) {
-    console.error("\n❌ No se encontraron resultados. Verifica que los datos ingresados fueron correctos.")
-  }
+    // Verificar si se encontraron datos
+    if (estado.length === 0 && establecimientos.length === 0) {
+      console.log(`ℹ️ No se encontraron datos para el RUC ${ruc}.`)
+      return
+    } else {
+      // Conectar a MongoDB
+      const client = new MongoClient(uri)
+      await client.connect()
+      const db = client.db(dbName)
+      const collection = db.collection(collectionName)
 
-  await browser.close()
+      // Verificar si ya existen registros para este RUC
+      const doc = await collection.findOne({ ruc })
+
+      if (!doc) {
+        // Insertar nuevo documento
+        await collection.insertOne({ 
+          ruc, 
+          fechaActualizacion: new Date(),
+          datosContribuyente: estado[0] || {},
+          establecimientos: establecimientos 
+        })
+        console.log(`✅ Se guardaron los datos del RUC ${ruc} en la base de datos.`)
+        console.log(`   - Datos del contribuyente: ${estado.length > 0 ? 'Guardado' : 'No encontrado'}`)
+        console.log(`   - Establecimientos: ${establecimientos.length} guardados`)
+      } else {
+        let actualizaciones = {}
+        let cambios = false
+
+        // Verificar cambios en datos del contribuyente
+        const datosActuales = estado[0] || {}
+        const datosExistentes = doc.datosContribuyente || {}
+        
+        if (JSON.stringify(datosActuales) !== JSON.stringify(datosExistentes)) {
+          actualizaciones.datosContribuyente = datosActuales
+          cambios = true
+        }
+
+        // Verificar nuevos establecimientos
+        const establecimientosExistentes = doc.establecimientos || []
+        const nuevosEstablecimientos = establecimientos.filter(nuevo =>
+          !establecimientosExistentes.some(existente => 
+            existente.numEstablecimiento === nuevo.numEstablecimiento &&
+            existente.nombre === nuevo.nombre &&
+            existente.ubicacion === nuevo.ubicacion &&
+            existente.estado === nuevo.estado
+          )
+        )
+
+        if (nuevosEstablecimientos.length > 0) {
+          // Agregar solo los nuevos establecimientos
+          await collection.updateOne(
+            { ruc },
+            { 
+              $push: { establecimientos: { $each: nuevosEstablecimientos } },
+              $set: { fechaActualizacion: new Date() }
+            }
+          )
+          cambios = true
+          console.log(`✅ Se agregaron ${nuevosEstablecimientos.length} nuevos establecimientos al RUC ${ruc}.`)
+        }
+
+        // Actualizar datos del contribuyente si cambiaron
+        if (actualizaciones.datosContribuyente) {
+          await collection.updateOne(
+            { ruc },
+            { 
+              $set: { 
+                datosContribuyente: actualizaciones.datosContribuyente,
+                fechaActualizacion: new Date()
+              }
+            }
+          )
+          console.log(`✅ Se actualizaron los datos del contribuyente para el RUC ${ruc}.`)
+        }
+
+        if (!cambios) {
+          console.log(`⚠️ Ya existen todos los datos guardados para el RUC ${ruc}.`)
+        }
+      }
+
+      await client.close()
+    }
+
+  } catch (error) {
+    console.error("\n❌ Error: ", error)
+  } finally {
+    await browser.close()
+  }
 }
 
 obtenerDatosRuc(ruc)
