@@ -7,7 +7,7 @@ const dbName = "webScraping"
 const collectionName = "procesosJudiciales"
 
 //DATOS SIMULADOS
-const cedula = "1102961867"
+const cedula = "1150334017"
 const tipoConsulta = "actor" // Puede ser "actor/ofendido" o "demandado/procesado"
 
 export const obtenerProcesos = async (cedula, tipoConsulta) => {

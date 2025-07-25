@@ -11,7 +11,7 @@ const dbName = "webScraping"
 const collectionName = "senescyt"
 
 // Datos simulados
-const cedula = "1102961867"
+const cedula = "1150334017" //"1102961867"
 
 // Crear directorio para archivos de Tesseract
 const tesseractDir = "./Tesseract"
