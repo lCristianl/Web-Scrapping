@@ -1,0 +1,22 @@
+{
+  "name": "web-scraping-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mongodb": "^6.18.0",
+    "node-fetch": "^3.3.2",
+    "pdf-parse": "^1.1.1",
+    "playwright": "^1.54.1",
+    "sharp": "^0.32.6",
+    "tesseract.js": "^5.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
