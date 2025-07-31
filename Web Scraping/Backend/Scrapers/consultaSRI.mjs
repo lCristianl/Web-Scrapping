@@ -2,7 +2,7 @@ import { chromium } from "playwright"
 import { DatabaseOperations, Collections } from '../Models/database.js'
 
 export const obtenerDatosRuc = async (ruc) => {
-  const browser = await chromium.launch({ headless: true })
+  const browser = await chromium.launch({ headless: false })
   const page = await browser.newPage()
 
   try {

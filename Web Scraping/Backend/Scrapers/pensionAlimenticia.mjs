@@ -39,7 +39,7 @@ export const obtenerPensiones = async (cedula) => {
           const fila0 = filasAnidadas[0]?.querySelectorAll("td") || [];
           const fila3 = filasAnidadas[3]?.querySelectorAll("td") || [];
           intervinientes = {
-            RepresentanteLegal: fila0[1]?.innerText.trim() || "",
+            representanteLegal: fila0[1]?.innerText.trim() || "",
             obligadoPrincipal: fila3[1]?.innerText.trim() || ""
           };
         }

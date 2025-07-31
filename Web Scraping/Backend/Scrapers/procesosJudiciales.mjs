@@ -2,7 +2,7 @@ import { chromium } from "playwright"
 import { DatabaseOperations, Collections } from '../Models/database.js'
 
 export const obtenerProcesos = async (cedula, tipoConsulta = "actor") => {
-  const browser = await chromium.launch({ headless: true })
+  const browser = await chromium.launch({ headless: false })
   const page = await browser.newPage()
   
   try {

@@ -2,7 +2,7 @@ import { MongoClient } from 'mongodb'
 
 // Configuración de la base de datos
 const config = {
-  uri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/",
+  uri: process.env.MONGODB_URI || "mongodb://localhost:27017",
   dbName: process.env.DB_NAME || "webScraping",
   options: {
     useUnifiedTopology: true,
