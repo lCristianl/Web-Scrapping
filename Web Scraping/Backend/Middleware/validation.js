@@ -54,19 +54,12 @@ export const validateRuc = (req, res, next) => {
 }
 
 export const validateSearchParams = (req, res, next) => {
-  const { nombre, tipoBusqueda } = req.body
+  const { nombre} = req.body
   
   if (!nombre) {
     return res.status(400).json({
       success: false,
       error: 'El nombre es requerido'
-    })
-  }
-  
-  if (!tipoBusqueda) {
-    return res.status(400).json({
-      success: false,
-      error: 'El tipo de búsqueda es requerido'
     })
   }
   

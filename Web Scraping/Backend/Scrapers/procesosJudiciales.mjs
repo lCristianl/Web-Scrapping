@@ -1,7 +1,7 @@
 import { chromium } from "playwright"
 import { DatabaseOperations, Collections } from '../Models/database.js'
 
-export const obtenerProcesos = async (cedula, tipoConsulta = "actor") => {
+export const obtenerProcesos = async (cedula) => {
   const browser = await chromium.launch({ headless: false })
   const page = await browser.newPage()
   
@@ -10,72 +10,83 @@ export const obtenerProcesos = async (cedula, tipoConsulta = "actor") => {
       waitUntil: "domcontentloaded"
     })
 
-    let resultados = []
+    let resultadosActor = []
+    let resultadosDemandado = []
 
-    //Si el tipo de consulta es por el número de cedula del actor o del ofendido
-    if (["actor", "ofendido"].includes(tipoConsulta.toLowerCase())) {
-      // Rellenamos el campo de cédula
-      await page.type('input[formcontrolname="cedulaActor"]', cedula)    
-      // Se le da click al botón de buscar
-      await page.waitForSelector('.boton-buscar:not([disabled])', { timeout: 5000 })
-      await page.click('.boton-buscar')
-      
-      // Espera hasta que aparezca la primera etiqueta que tiene la clase cuerpo o la que tiene la clase mat-mdc-simple-snack-bar
-      const estado = await Promise.race([
-        page.waitForSelector('.mat-mdc-simple-snack-bar.ng-star-inserted', { timeout: 60000 }).then(() => 'no_resultados'),
-        page.waitForSelector('.cuerpo', { timeout: 60000 }).then(() => 'ok'),
-      ])
+    // Rellenamos el campo de cédula
+    await page.type('input[formcontrolname="cedulaActor"]', cedula)    
+    // Se le da click al botón de buscar
+    await page.waitForSelector('.boton-buscar:not([disabled])', { timeout: 5000 })
+    await page.click('.boton-buscar')
+    
+    // Espera hasta que aparezca la primera etiqueta que tiene la clase cuerpo o la que tiene la clase mat-mdc-simple-snack-bar
+    const estadoActor = await Promise.race([
+      page.waitForSelector('.mat-mdc-simple-snack-bar.ng-star-inserted', { timeout: 60000 }).then(() => 'no_resultados'),
+      page.waitForSelector('.cuerpo', { timeout: 60000 }).then(() => 'ok'),
+    ])
 
-      //Si se encontró la etiqueta que tiene la clase mat-mdc-simple-snack-bar PRIMERO (No se encontraron resultados)
-      if (estado === 'no_resultados') {
-        console.log(`ℹ️ No hay procesos judiciales registrados para la cédula ${cedula} como ${tipoConsulta}`)
-      } else {
-        resultados = await extraerDatos(page) //Función para extraer los datos de la página
-      }
-      //Si el tipo de consulta es por el número de cedula del demandado o procesado
-    } else if (["demandado", "procesado"].includes(tipoConsulta.toLowerCase())) {
-      // Rellenamos el campo de cédula
-      await page.fill('input[formcontrolname="cedulaDemandado"]', cedula)
-      // Se le da click al botón de buscar
-      await page.waitForSelector('.boton-buscar:not([disabled])', { timeout: 5000 })
-      await page.click('.boton-buscar')
-
-      // Espera hasta que aparezca la primera etiqueta que tiene la clase cuerpo o la que tiene la clase mat-mdc-simple-snack-bar
-      const estado = await Promise.race([
-        page.waitForSelector('.mat-mdc-simple-snack-bar.ng-star-inserted', { timeout: 60000 }).then(() => 'no_resultados'),
-        page.waitForSelector('.cuerpo', { timeout: 60000 }).then(() => 'ok'),
-      ])
-
-      //Si se encontró la etiqueta que tiene la clase mat-mdc-simple-snack-bar PRIMERO (No se encontraron resultados)
-      if (estado === 'no_resultados') {
-        console.log(`ℹ️ No hay procesos judiciales registrados para la cédula ${cedula} como ${tipoConsulta}`)
-      } else {
-        resultados = await extraerDatos(page) //Función para extraer los datos de la página
-      }
+    //Si se encontró la etiqueta que tiene la clase mat-mdc-simple-snack-bar PRIMERO (No se encontraron resultados)
+    if (estadoActor === 'no_resultados') {
+      console.log(`ℹ️ No hay procesos judiciales registrados para la cédula ${cedula}`)
     } else {
-      throw new Error("Tipo de consulta no válido. Debe ser 'actor/ofendido' o 'demandado/procesado'.")
+      resultadosActor = await extraerDatos(page) //Función para extraer los datos de la página
+      // Se le da click al boton de regresar para buscar por demandado
+      await page.click('.botones.btn-regresar.mdc-button')
     }
 
+    // Rellenamos el campo de cédula
+    await page.fill('input[formcontrolname="cedulaDemandado"]', cedula)
+    // Se le da click al botón de buscar
+    await page.waitForSelector('.boton-buscar:not([disabled])', { timeout: 5000 })
+    await page.click('.boton-buscar')
+    
+    // Espera hasta que aparezca la primera etiqueta que tiene la clase cuerpo o la que tiene la clase mat-mdc-simple-snack-bar
+    const estadoDemandado = await Promise.race([
+      page.waitForSelector('.mat-mdc-simple-snack-bar.ng-star-inserted', { timeout: 60000 }).then(() => 'no_resultados'),
+      page.waitForSelector('.cuerpo', { timeout: 60000 }).then(() => 'ok'),
+    ])
+
+    //Si se encontró la etiqueta que tiene la clase mat-mdc-simple-snack-bar PRIMERO (No se encontraron resultados)
+    if (estadoDemandado === 'no_resultados') {
+      console.log(`ℹ️ No hay procesos judiciales registrados para la cédula ${cedula}`)
+    } else {
+      resultadosDemandado = await extraerDatos(page) //Función para extraer los datos de la página
+    }
+
+    const resultados = [...resultadosActor, ...resultadosDemandado]
+
     // Guardar en base de datos usando el modelo
-    if (resultados.length > 0) {
-      await DatabaseOperations.addToArrayNoDuplicates(
+    if (estadoActor === 'ok' || estadoDemandado === 'ok') {
+      const datosParaGuardar = {
+        cedula,
+        procesos: {
+          resultadosActor: resultadosActor,
+          resultadosDemandado: resultadosDemandado
+        },
+        totalProcesosActor: resultadosActor.length,
+        totalProcesosDemandado: resultadosDemandado.length,
+        fechaConsulta: new Date(),
+        estado: (resultadosActor.length > 0 || resultadosDemandado.length > 0) ? 'con_procesos' : 'sin_procesos'
+      }
+
+      await DatabaseOperations.upsert(
         Collections.PROCESOS_JUDICIALES,
         { cedula },
-        tipoConsulta.toLowerCase(),
-        resultados,
-        ['numeroProceso']
+        datosParaGuardar
       )
-      console.log(`💾 Datos guardados en base de datos para la cédula ${cedula}`)
     }
 
     // Retornar datos para el controller
     return {
       cedula,
-      tipoConsulta,
-      procesos: resultados,
-      totalProcesos: resultados.length,
+      procesos: {
+        resultadosActor: resultadosActor,
+        resultadosDemandado: resultadosDemandado
+      },
+      totalProcesosActor: resultadosActor.length,
+      totalProcesosDemandado: resultadosDemandado.length,
       fechaConsulta: new Date(),
-      estado: resultados.length > 0 ? 'exitoso' : 'sin_datos'
+      estado: (resultadosActor.length > 0 || resultadosDemandado.length > 0) ? 'exitoso' : 'sin_datos'
     }
 
   } catch (error) {
