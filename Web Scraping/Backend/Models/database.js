@@ -71,7 +71,8 @@ export const Collections = {
   PENSION_ALIMENTICIA: 'pensionAlimenticia',
   PROCESOS_JUDICIALES: 'procesosJudiciales',
   SENESCYT: 'senescyt',
-  SRI_DEUDAS: 'sri-deudas'
+  SRI_DEUDAS: 'sri-deudas',
+  SUPERCIAS_EMPRESAS: 'supercias-empresas'
 }
 
 // Funciones auxiliares para operaciones comunes
