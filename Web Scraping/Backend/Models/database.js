@@ -70,7 +70,8 @@ export const Collections = {
   IMPEDIMENTOS_CARGOS_PUBLICOS: 'impedimentosCargosPublicos',
   PENSION_ALIMENTICIA: 'pensionAlimenticia',
   PROCESOS_JUDICIALES: 'procesosJudiciales',
-  SENESCYT: 'senescyt'
+  SENESCYT: 'senescyt',
+  SRI_DEUDAS: 'sri_deudas'
 }
 
 // Funciones auxiliares para operaciones comunes
