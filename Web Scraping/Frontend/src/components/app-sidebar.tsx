@@ -64,6 +64,11 @@ const menuItems = [
     url: "/senescyt",
     icon: GraduationCap,
   },
+  {
+    title: "Super CIAS",
+    url: "/supercias",
+    icon: Building2,
+  }
 ]
 
 export function AppSidebar() {
