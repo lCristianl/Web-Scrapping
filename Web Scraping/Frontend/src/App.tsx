@@ -2,6 +2,7 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { HomePage } from "./Pages/HomePage"
+import { CertificadosIESSPage } from "./Pages/CertificadosIESSPage"
 import { CitacionesANTPage } from "./Pages/CitacionesANTPage"
 import { CitacionJudicialPage } from "./Pages/CitacionJudicialPage"
 import { ConsejoJudicaturaPage } from "./Pages/ConsejoJudicaturaPage"
@@ -19,6 +20,7 @@ function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/certificado-iess" element={<CertificadosIESSPage />} />
             <Route path="/citaciones-ant" element={<CitacionesANTPage />} />
             <Route path="/citacion-judicial" element={<CitacionJudicialPage />} />
             <Route path="/consejo-judicatura" element={<ConsejoJudicaturaPage />} />

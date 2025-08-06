@@ -15,6 +15,11 @@ import {
 
 const menuItems = [
   {
+    title: "Certificados IESS",
+    url: "/certificado-iess",
+    icon: FileText,
+  },
+  {
     title: "Citaciones ANT",
     url: "/citaciones-ant",
     icon: FileText,
