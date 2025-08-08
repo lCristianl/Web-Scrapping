@@ -1,0 +1,56 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Build output que no necesitamos en el contexto
+.next
+.nuxt
+coverage
+
+# Development files que NO necesitamos para el build
+# src - NECESARIO para el build, no excluir
+# public - NECESARIO para el build, no excluir  
+# index.html - NECESARIO para el build, no excluir
+
+# Configuration files que SÍ necesitamos para el build
+# vite.config.ts - NECESARIO para el build
+# tsconfig*.json - NECESARIO para el build
+# tailwind.config.ts - NECESARIO para el build
+# eslint.config.js - NECESARIO para el build
+
+# Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+# nginx.conf - NECESARIO para la configuración del servidor
+
+# Documentation
+README.md
+
+# Testing
+__tests__
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Logs
+logs
+*.log

@@ -1,5 +1,19 @@
-import { obtenerDatosCertificadoIESS } from '../Scrapers/certificadosIESS.mjs'
+// import { obtenerDatosCertificadoIESS } from '../Scrapers/certificadosIESS.mjs' // Comentado temporalmente
 import { DatabaseOperations, Collections } from '../Models/database.js'
+
+// Función temporal para el certificado IESS mientras se resuelve el problema con pdfjs-dist
+async function obtenerDatosCertificadoIESSTemp(cedula, fechaNacimiento) {
+  return {
+    cedula,
+    fechaNacimiento,
+    nombre: "Usuario",
+    registradoComoEmpleador: false,
+    estadoActividad: null,
+    mensaje: "Servicio temporalmente deshabilitado por configuración Docker",
+    fechaConsulta: new Date(),
+    estado: 'temporal'
+  }
+}
 
 export const consultarCertificadoIESS = async (req, res) => {
   try {
@@ -22,7 +36,7 @@ export const consultarCertificadoIESS = async (req, res) => {
       resultado = datosExistentes
     } else {
       console.log(`🌐 Realizando nueva consulta...`)
-      resultado = await obtenerDatosCertificadoIESS(cedula, fechaNacimiento)
+      resultado = await obtenerDatosCertificadoIESSTemp(cedula, fechaNacimiento) // Función temporal
     }
     
     // Validar resultado

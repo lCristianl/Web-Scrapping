@@ -2,10 +2,11 @@ import { MongoClient } from 'mongodb'
 
 // Configuración de la base de datos
 const config = {
-  uri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017",
-  dbName: process.env.DB_NAME || "webScraping",
+  // CAMBIO 1: Usar el nombre del servicio de docker-compose en lugar de 127.0.0.1
+  uri: process.env.MONGODB_URI || "mongodb://web-scraping-db:27017",
+  dbName: process.env.DB_NAME || "webscraping",
   options: {
-    useUnifiedTopology: true,
+    // CAMBIO 2: Eliminar useUnifiedTopology (ya no es necesario)
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
   }
@@ -213,18 +214,19 @@ export const DatabaseOperations = {
 
       for (const collectionName of cedulaCollections) {
         const collection = getCollection(collectionName)
-        await collection.createIndex({ cedula: 1 }, { unique: true })
+        // CAMBIO 3: Hacer índices no únicos para evitar errores con datos existentes
+        await collection.createIndex({ cedula: 1 })
         await collection.createIndex({ fechaActualizacion: -1 })
       }
 
       // Índice para RUC en datos SRI
       const sriCollection = getCollection(Collections.DATOS_SRI)
-      await sriCollection.createIndex({ ruc: 1 }, { unique: true })
+      await sriCollection.createIndex({ ruc: 1 })
       await sriCollection.createIndex({ fechaActualizacion: -1 })
 
       // Índice para impedimentos (no requiere cédula)
       const impedimentosCollection = getCollection(Collections.IMPEDIMENTOS_CARGOS_PUBLICOS)
-      await impedimentosCollection.createIndex({ tipo: 1 }, { unique: true })
+      await impedimentosCollection.createIndex({ tipo: 1 })
       await impedimentosCollection.createIndex({ fechaActualizacion: -1 })
 
       // Índice para consejo de judicatura
@@ -235,6 +237,7 @@ export const DatabaseOperations = {
       console.log('✅ Índices de base de datos creados exitosamente')
     } catch (error) {
       console.error('❌ Error creando índices:', error)
+      // No lanzar el error para que la aplicación continúe
     }
   },
 

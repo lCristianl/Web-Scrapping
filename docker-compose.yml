@@ -1,0 +1,69 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: web-scraping-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: webscraping
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    ports:
+      - "27017:27017"
+    networks:
+      - web-scraping-network
+
+  # Backend Service
+  backend:
+    build:
+      context: "./Web Scraping/Backend"
+      dockerfile: Dockerfile
+    container_name: web-scraping-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/webscraping?authSource=admin
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+    volumes:
+      # Volumen para datos persistentes si es necesario
+      - "./Web Scraping/Backend/Utils/Tesseract:/app/Utils/Tesseract"
+    networks:
+      - web-scraping-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Service
+  frontend:
+    build:
+      context: "./Web Scraping/Frontend"  # ← Comillas alrededor de la ruta
+      dockerfile: Dockerfile
+    container_name: web-scraping-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - web-scraping-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+
+networks:
+  web-scraping-network:
+    driver: bridge

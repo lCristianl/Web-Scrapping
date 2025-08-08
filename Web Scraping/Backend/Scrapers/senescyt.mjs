@@ -1,6 +1,6 @@
 import { chromium } from "playwright"
 import Tesseract from 'tesseract.js'
-import sharp from 'sharp'
+// import sharp from 'sharp' // Comentado temporalmente
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Crear directorio para archivos de Tesseract (relativo al backend)
-const tesseractDir = path.join(__dirname, "..", "utils", "tesseract")
+const tesseractDir = path.join(__dirname, "..", "Utils", "Tesseract")
 if (!fs.existsSync(tesseractDir)) {
   fs.mkdirSync(tesseractDir, { recursive: true })
 }
@@ -27,8 +27,13 @@ export const obtenerDatos = async (cedula) => {
 
     let estado = ""
     let resultados = []
+    let intentosCaptcha = 0
+    const maxIntentos = 10 // Limitar intentos para evitar bucles infinitos
     
-    while (true) {
+    while (intentosCaptcha < maxIntentos) {
+      intentosCaptcha++
+      console.log(`🔄 Intento ${intentosCaptcha}/${maxIntentos} de resolver captcha`)
+      
       // Esperar a que cargue el captcha
       await page.waitForSelector('img[src*="Captcha.jpg"]');
     
@@ -40,20 +45,21 @@ export const obtenerDatos = async (cedula) => {
       const captchaElement = await page.$('img[src*="Captcha.jpg"]');
       await captchaElement.screenshot({ path: captchaPath });
     
-      // Preprocesar la imagen con sharp
-      await sharp(captchaPath)
-        .normalize()
-        .grayscale()                  // convierte a blanco y negro
-        .modulate({ brightness: 2, contrast: 1.5 })  // mejora visibilidad de caracteres
-        .sharpen()  // resalta bordes   
-        .threshold(50)           
-        .resize(400, 100)                // agrandar si es muy pequeño
-        .toFile(processedPath);
+      // Usar la imagen directamente sin preprocesamiento (Sharp comentado temporalmente)
+      // await sharp(captchaPath)
+      //   .normalize()
+      //   .grayscale()
+      //   .modulate({ brightness: 2, contrast: 1.5 })
+      //   .sharpen()
+      //   .threshold(50)
+      //   .resize(400, 100)
+      //   .toFile(processedPath);
     
-      // OCR con Tesseract - especificar la carpeta para los archivos de entrenamiento
-      const { data: { text } } = await Tesseract.recognize(processedPath, 'eng', {
-        cachePath: tesseractDir,  // Los archivos .traineddata se guardarán aquí
-        langPath: tesseractDir    // Buscar archivos de idioma en esta carpeta
+      // OCR con Tesseract usando la imagen original
+      const { data: { text } } = await Tesseract.recognize(captchaPath, 'eng', {
+        cachePath: tesseractDir,
+        langPath: tesseractDir,
+        logger: m => console.log(`🔍 Tesseract: ${m.status} - ${m.progress}`)
       });
     
       const captchaText = text.trim();
@@ -89,6 +95,12 @@ export const obtenerDatos = async (cedula) => {
         console.log(`❌ Captcha incorrecto, intentando de nuevo...`)
         // El bucle continuará para intentar con un nuevo captcha
       }
+    }
+
+    // Si se alcanzó el máximo de intentos sin éxito
+    if (intentosCaptcha >= maxIntentos && estado !== 'ok' && estado !== 'no_resultados') {
+      console.log(`⚠️ Se alcanzó el máximo de ${maxIntentos} intentos para resolver el captcha`)
+      estado = 'captcha_fallido'
     }
 
     if (estado === 'ok') {
@@ -127,7 +139,10 @@ export const obtenerDatos = async (cedula) => {
       titulos: resultados,
       totalTitulos: resultados.length,
       fechaConsulta: new Date(),
-      estado: estado === 'ok' ? 'exitoso' : 'sin_datos'
+      estado: estado === 'ok' ? 'exitoso' : 
+              estado === 'no_resultados' ? 'sin_datos' : 
+              estado === 'captcha_fallido' ? 'captcha_no_resuelto' : 'error',
+      intentosCaptcha: intentosCaptcha
     }
     
   } catch (error) {
@@ -139,14 +154,14 @@ export const obtenerDatos = async (cedula) => {
     // Limpiar archivos temporales de captcha
     try {
       const captchaPath = path.join(tesseractDir, 'captcha.png')
-      const processedPath = path.join(tesseractDir, 'captcha_processed.png')
+      // const processedPath = path.join(tesseractDir, 'captcha_processed.png') // Comentado temporalmente
       
       if (fs.existsSync(captchaPath)) {
         fs.unlinkSync(captchaPath)
       }
-      if (fs.existsSync(processedPath)) {
-        fs.unlinkSync(processedPath)
-      }
+      // if (fs.existsSync(processedPath)) {
+      //   fs.unlinkSync(processedPath)
+      // }
     } catch (err) {
       console.warn('⚠️ No se pudieron limpiar archivos temporales:', err.message)
     }
