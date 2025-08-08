@@ -1,5 +1,5 @@
 import express from 'express'
-import { validateCedula, validateRuc, validateSearchParams, validateCertificadoIESS } from '../Middleware/validation.js'
+import { validateCedula, validateRuc, validateCedulaOrRuc, validateSearchParams, validateCertificadoIESS } from '../Middleware/validation.js'
 
 // Importar controllers
 import { consultarCertificadoIESS } from '../Controllers/certificadosIESS.js'
@@ -12,7 +12,10 @@ import { consultarPensionAlimenticia } from '../Controllers/pensionAlimenticia.j
 import { consultarProcesosJudiciales } from '../Controllers/procesosJudiciales.js'
 import { consultarSenescyt } from '../Controllers/senescyt.js'
 import { consultarSRIDeudas } from '../Controllers/sriDeudas.js'
-import { consultarSuperciasEmpresas } from '../Controllers/superCias.js';
+import { consultarSuperciasEmpresas } from '../Controllers/superCias.js'
+import { consultarInterpol } from "../Controllers/interpol.js";
+import { consultarAntecedentesPenales } from '../Controllers/antecedentesPenales.js';
+
 
 const router = express.Router()
 
@@ -26,8 +29,10 @@ router.post('/impedimentos-cargos-publicos', consultarImpedimentos) // No requie
 router.post('/pension-alimenticia', validateCedula, consultarPensionAlimenticia)
 router.post('/procesos-judiciales', validateCedula, consultarProcesosJudiciales)
 router.post('/senescyt', validateCedula, consultarSenescyt)
-router.post('/sri-deudas', validateRuc, consultarSRIDeudas)
-router.post('/supercias-empresas', consultarSuperciasEmpresas);
+router.post('/sri-deudas', validateCedulaOrRuc, consultarSRIDeudas)
+router.post('/supercias-empresas', validateCedulaOrRuc, consultarSuperciasEmpresas)
+router.post('/antecedentes-penales', validateCedula, consultarAntecedentesPenales)
+router.post('/interpol', consultarInterpol);
 
 // Ruta de estado de la API
 router.get('/health', (req, res) => {
@@ -53,7 +58,9 @@ router.get('/collections', (req, res) => {
       'procesos-judiciales',
       'senescyt',
       'sri-deudas',
-      'supercias-empresas'
+      'supercias-empresas',
+      'interpol',
+      'antecedentes-penales'
     ]
   })
 })
