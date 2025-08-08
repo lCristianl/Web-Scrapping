@@ -11,6 +11,7 @@ import { ImpedimentosCargosPage } from "./Pages/ImpedimentosCargosPage"
 import { PensionAlimenticiaPage } from "./Pages/PensionAlimenticiaPage"
 import { ProcesosJudicialesPage } from "./Pages/ProcesosJudicialesPage"
 import { SenescytPage } from "./Pages/SenescytPage"
+import { SuperCiasPage } from "./Pages/SuperCiasPage"
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/pension-alimenticia" element={<PensionAlimenticiaPage />} />
             <Route path="/procesos-judiciales" element={<ProcesosJudicialesPage />} />
             <Route path="/senescyt" element={<SenescytPage />} />
+            <Route path="/supercias" element={<SuperCiasPage />} />
           </Routes>
         </main>
       </SidebarProvider>

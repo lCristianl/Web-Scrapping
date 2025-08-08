@@ -40,6 +40,11 @@ const menuItems = [
     icon: Receipt,
   },
   {
+    title: "SRI Deudas",
+    url: "/sri-deudas",
+    icon: Receipt,
+  },
+  {
     title: "Impedimentos Cargos Públicos",
     url: "/impedimentos-cargos",
     icon: UserX,
@@ -59,6 +64,11 @@ const menuItems = [
     url: "/senescyt",
     icon: GraduationCap,
   },
+  {
+    title: "Super CIAS",
+    url: "/supercias",
+    icon: Building2,
+  }
 ]
 
 export function AppSidebar() {

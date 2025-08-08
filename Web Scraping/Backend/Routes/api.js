@@ -11,6 +11,8 @@ import { consultarImpedimentos } from '../Controllers/impedimentosCargosPublicos
 import { consultarPensionAlimenticia } from '../Controllers/pensionAlimenticia.js'
 import { consultarProcesosJudiciales } from '../Controllers/procesosJudiciales.js'
 import { consultarSenescyt } from '../Controllers/senescyt.js'
+import { consultarSRIDeudas } from '../Controllers/sriDeudas.js'
+import { consultarSuperciasEmpresas } from '../Controllers/superCias.js';
 
 const router = express.Router()
 
@@ -24,6 +26,8 @@ router.post('/impedimentos-cargos-publicos', consultarImpedimentos) // No requie
 router.post('/pension-alimenticia', validateCedula, consultarPensionAlimenticia)
 router.post('/procesos-judiciales', validateCedula, consultarProcesosJudiciales)
 router.post('/senescyt', validateCedula, consultarSenescyt)
+router.post('/sri-deudas', validateRuc, consultarSRIDeudas)
+router.post('/supercias-empresas', consultarSuperciasEmpresas);
 
 // Ruta de estado de la API
 router.get('/health', (req, res) => {
@@ -47,7 +51,9 @@ router.get('/collections', (req, res) => {
       'impedimentos-cargos-publicos',
       'pension-alimenticia',
       'procesos-judiciales',
-      'senescyt'
+      'senescyt',
+      'sri-deudas',
+      'supercias-empresas'
     ]
   })
 })
