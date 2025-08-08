@@ -1,4 +1,4 @@
-import { FileText, Gavel, Building2, Receipt, UserX, Heart, Scale, GraduationCap } from "lucide-react"
+import { FileText, Gavel, Building2, Receipt, UserX, Heart, Scale, GraduationCap, Shield } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 import {
@@ -68,6 +68,16 @@ const menuItems = [
     title: "Super CIAS",
     url: "/supercias",
     icon: Building2,
+  },
+  {
+    title: "Interpol",
+    url: "/interpol",
+    icon: FileText,
+  },
+  {
+    title: "Antecedentes Penales",
+    url: "/antecedentes-penales",
+    icon: Shield,
   }
 ]
 
