@@ -74,6 +74,49 @@ export const validateSearchParams = (req, res, next) => {
   next()
 }
 
+export const validateCedulaOrRuc = (req, res, next) => {
+  const { ruc } = req.body // Mantener el nombre 'ruc' para compatibilidad con el frontend
+  
+  if (!ruc) {
+    return res.status(400).json({
+      success: false,
+      error: 'El RUC o cédula es requerido'
+    })
+  }
+  
+  // Validar que sea solo números
+  const numeroRegex = /^\d+$/
+  if (!numeroRegex.test(ruc)) {
+    return res.status(400).json({
+      success: false,
+      error: 'El RUC o cédula debe contener solo números'
+    })
+  }
+  
+  // Validar longitud: 10 dígitos (cédula) o 13 dígitos (RUC)
+  if (ruc.length !== 10 && ruc.length !== 13) {
+    return res.status(400).json({
+      success: false,
+      error: 'Debe ingresar una cédula (10 dígitos) o un RUC (13 dígitos)'
+    })
+  }
+  
+  // Si es cédula (10 dígitos), validar código de provincia
+  if (ruc.length === 10) {
+    const province = parseInt(ruc.substring(0, 2))
+    if (province < 1 || province > 24) {
+      return res.status(400).json({
+        success: false,
+        error: 'Código de provincia inválido en la cédula'
+      })
+    }
+  }
+  
+  // Si es RUC (13 dígitos), podríamos agregar validaciones adicionales aquí si es necesario
+  
+  next()
+}
+
 export const validateCertificadoIESS = (req, res, next) => {
   const { cedula, fechaNacimiento } = req.body
   
