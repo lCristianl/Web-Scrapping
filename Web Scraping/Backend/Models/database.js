@@ -73,7 +73,8 @@ export const Collections = {
   PROCESOS_JUDICIALES: 'procesosJudiciales',
   SENESCYT: 'senescyt',
   SRI_DEUDAS: 'sri-deudas',
-  SUPERCIAS_EMPRESAS: 'supercias-empresas'
+  SUPERCIAS_EMPRESAS: 'supercias-empresas',
+  INTERPOL: 'interpol'
 }
 
 // Funciones auxiliares para operaciones comunes
@@ -236,6 +237,28 @@ export const DatabaseOperations = {
       await consejoCollection.createIndex({ tipo: 1 })
       await consejoCollection.createIndex({ fechaActualizacion: -1 })
 
+      // Índices para Interpol
+      const interpolCollection = getCollection(Collections.INTERPOL)
+      // Primero eliminar documentos con clave null o vacía
+      await interpolCollection.deleteMany({ 
+        $or: [
+          { clave: null }, 
+          { clave: "" }, 
+          { clave: { $exists: false } }
+        ] 
+      })
+    
+      // Crear índices sin unique constraint problemático
+      await interpolCollection.createIndex({ clave: 1 }, { 
+        unique: true,
+        partialFilterExpression: { 
+          clave: { $exists: true, $type: "string" } 
+        }
+      })
+      await interpolCollection.createIndex({ fechaConsulta: -1 })
+      await interpolCollection.createIndex({ homonimo: 1 })
+      await interpolCollection.createIndex({ cantidadResultados: 1 })
+
       console.log('✅ Índices de base de datos creados exitosamente')
     } catch (error) {
       console.error('❌ Error creando índices:', error)
@@ -334,6 +357,38 @@ export const SRIModel = {
   }
 }
 
+export const InterpolModel = {
+  async save(clave, cantidadResultados, homonimo, avisos) {
+    const datosConsulta = {
+      clave: clave.trim(),
+      cantidadResultados,
+      homonimo,
+      fechaConsulta: new Date(),
+      avisos
+    };
+
+    return await DatabaseOperations.upsert(
+      Collections.INTERPOL,
+      { clave: clave.trim() },
+      datosConsulta
+    );
+  },
+
+  async findByClave(clave) {
+    const collection = getCollection(Collections.INTERPOL);
+    return await collection.findOne({ clave: clave.trim() });
+  },
+
+  async getAllConsultas() {
+    const collection = getCollection(Collections.INTERPOL);
+    return await collection.find({}).sort({ fechaConsulta: -1 }).toArray();
+  },
+
+  async getConsultasConHomonimos() {
+    const collection = getCollection(Collections.INTERPOL);
+    return await collection.find({ homonimo: true }).sort({ fechaConsulta: -1 }).toArray();
+  }
+};
 // Inicialización automática de la base de datos
 export const initializeDatabase = async () => {
   try {
